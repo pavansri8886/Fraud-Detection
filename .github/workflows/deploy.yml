@@ -18,6 +18,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend   # ← fixes your "requirements.txt not found" error
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,12 +31,13 @@ jobs:
         with:
           python-version: "3.11"
           cache: "pip"
+          cache-dependency-path: backend/requirements.txt  # ← needed when using working-directory
 
       - name: Install dependencies
         run: pip install -r requirements.txt
 
       - name: Train model
-        run: python train.py
+        run: python model/train.py   # ← correct path inside backend/
 
       - name: Run tests
         run: pytest tests/ -v
@@ -44,4 +49,4 @@ jobs:
     steps:
       - name: Trigger Render deploy hook
         run: |
-          curl --fail -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+          curl --fail -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
