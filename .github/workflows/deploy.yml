@@ -5,7 +5,7 @@
 #   1. Run the tests on every push to 'prod'
 #   2. If tests pass, trigger a redeploy on Render
 
-name: CI/CD - Fraud Detection
+name: CI/CD - Fraud-Detection
 
 on:
   push:
@@ -19,12 +19,29 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      # TODO: write the steps to install dependencies, train the model, and run the tests
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Train model
+        run: python train.py
+
+      - name: Run tests
+        run: pytest tests/ -v
 
   deploy-backend:
     needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/prod'
     steps:
-      # TODO: write the step that triggers the Render deploy hook
-      #       the URL must be stored as a GitHub secret, not hardcoded here
+      - name: Trigger Render deploy hook
+        run: |
+          curl --fail -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
