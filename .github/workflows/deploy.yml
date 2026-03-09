@@ -50,3 +50,11 @@ jobs:
       - name: Trigger Render deploy hook
         run: |
           curl --fail -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+
+      - name: Wait for Render to restart
+        run: sleep 30
+
+      - name: Smoke test – health check
+        run: |
+          curl --fail --retry 5 --retry-delay 10 --retry-connrefused \
+            "${{ secrets.RENDER_APP_URL }}/health"
